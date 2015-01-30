@@ -1,15 +1,14 @@
 exports = typeof window !== "undefined" && window !== null ? window : global;
-
 exports.Game = function() {
-  var players          = new Array();
-  var places           = new Array(6);
-  var purses           = new Array(6);
-  var inPenaltyBox     = new Array(6);
+  var players          = [];
+  var places           = [];
+  var purses           = [];
+  var inPenaltyBox     = [];
 
-  var popQuestions     = new Array();
-  var scienceQuestions = new Array();
-  var sportsQuestions  = new Array();
-  var rockQuestions    = new Array();
+  var popQuestions     = [];
+  var scienceQuestions = [];
+  var sportsQuestions  = [];
+  var rockQuestions    = [];
 
   var currentPlayer    = 0;
   var isGettingOutOfPenaltyBox = false;
@@ -19,36 +18,37 @@ exports.Game = function() {
   };
 
   var currentCategory = function(){
-    if(places[currentPlayer] == 0)
-      return 'Pop';
-    if(places[currentPlayer] == 4)
-      return 'Pop';
-    if(places[currentPlayer] == 8)
-      return 'Pop';
-    if(places[currentPlayer] == 1)
-      return 'Science';
-    if(places[currentPlayer] == 5)
-      return 'Science';
-    if(places[currentPlayer] == 9)
-      return 'Science';
-    if(places[currentPlayer] == 2)
-      return 'Sports';
-    if(places[currentPlayer] == 6)
-      return 'Sports';
-    if(places[currentPlayer] == 10)
-      return 'Sports';
-    return 'Rock';
-  };
+    switch(places[currentPlayer]){
+      case 0:
+      case 4:
+      case 8:
+          return 'Pop';
+      break;
 
-  this.createRockQuestion = function(index){
-    return "Rock Question "+index;
+      case 1:
+      case 5:
+      case 9:
+          return 'Science';
+      break;
+
+      case 2:
+      case 6:
+      case 10:
+          return 'Sports';
+      break;
+
+      default:
+        return 'Rock';
+      break;
+    }
+    
   };
 
   for(var i = 0; i < 50; i++){
     popQuestions.push("Pop Question "+i);
     scienceQuestions.push("Science Question "+i);
     sportsQuestions.push("Sports Question "+i);
-    rockQuestions.push(this.createRockQuestion(i));
+    rockQuestions.push("Rock Question "+i);
   };
 
   this.isPlayable = function(howManyPlayers){
@@ -57,28 +57,25 @@ exports.Game = function() {
 
   this.add = function(playerName){
     players.push(playerName);
-    places[this.howManyPlayers() - 1] = 0;
-    purses[this.howManyPlayers() - 1] = 0;
-    inPenaltyBox[this.howManyPlayers() - 1] = false;
-
+    var len = players.length;
+    places[len - 1] = 0;
+    purses[len - 1] = 0;
+    inPenaltyBox[len - 1] = false;
     console.log(playerName + " was added");
-    console.log("They are player number " + players.length);
-
+    console.log("They are player number " + len);
     return true;
   };
-
-  this.howManyPlayers = function(){
-    return players.length;
-  };
-
 
   var askQuestion = function(){
     if(currentCategory() == 'Pop')
       console.log(popQuestions.shift());
+      
     if(currentCategory() == 'Science')
       console.log(scienceQuestions.shift());
+
     if(currentCategory() == 'Sports')
       console.log(sportsQuestions.shift());
+      
     if(currentCategory() == 'Rock')
       console.log(rockQuestions.shift());
   };
@@ -118,21 +115,22 @@ exports.Game = function() {
   };
 
   this.wasCorrectlyAnswered = function(){
+    var winner;
     if(inPenaltyBox[currentPlayer]){
       if(isGettingOutOfPenaltyBox){
-        console.log('Answer was correct!!!!');
-        purses[currentPlayer] += 1;
+        console.log('Answer was correct!');
+        purses[currentPlayer]++;
         console.log(players[currentPlayer] + " now has " +
                     purses[currentPlayer]  + " Gold Coins.");
 
-        var winner = didPlayerWin();
-        currentPlayer += 1;
+        winner = didPlayerWin();
+        currentPlayer++;
         if(currentPlayer == players.length)
           currentPlayer = 0;
 
         return winner;
       }else{
-        currentPlayer += 1;
+        currentPlayer++;
         if(currentPlayer == players.length)
           currentPlayer = 0;
         return true;
@@ -142,15 +140,15 @@ exports.Game = function() {
 
     }else{
 
-      console.log("Answer was correct!!!!");
+      console.log("Answer was correct!");
 
-      purses[currentPlayer] += 1;
+      purses[currentPlayer]++;
       console.log(players[currentPlayer] + " now has " +
                   purses[currentPlayer]  + " Gold Coins.");
 
-      var winner = didPlayerWin();
+      winner = didPlayerWin();
 
-      currentPlayer += 1;
+      currentPlayer++;
       if(currentPlayer == players.length)
         currentPlayer = 0;
 
@@ -163,7 +161,7 @@ exports.Game = function() {
 		console.log(players[currentPlayer] + " was sent to the penalty box");
 		inPenaltyBox[currentPlayer] = true;
 
-    currentPlayer += 1;
+    currentPlayer++;
     if(currentPlayer == players.length)
       currentPlayer = 0;
 		return true;
@@ -171,17 +169,13 @@ exports.Game = function() {
 };
 
 var notAWinner = false;
-
 var game = new Game();
-
 game.add('Chet');
 game.add('Pat');
 game.add('Sue');
 
 do{
-
   game.roll(Math.floor(Math.random()*6) + 1);
-
   if(Math.floor(Math.random()*10) == 7){
     notAWinner = game.wrongAnswer();
   }else{
